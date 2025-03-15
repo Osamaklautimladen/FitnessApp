@@ -6,14 +6,18 @@
     <title>Übung starten</title>
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script id="exercises-data" type="application/json">
         {{ exercises | tojson | safe }}
     </script>
+   
     <script>
+        const exerciseTime = 45;
         let currentExerciseIndex = 0;
         let currentSet = 1;
         let currentRepetition = 1;
-        let timer;
+        const pauseTime = 15;
         let isRunning = false;
         const exercises = JSON.parse(document.getElementById('exercises-data').textContent);
 
@@ -38,47 +42,51 @@
             let exerciseImage = document.createElement('img');
             exerciseImage.src = `/static/images/${exercise.image}`;
             exerciseImage.alt = exercise.title;
-            exerciseImage.style.width = "300px";
             exerciseImage.style.display = "block";
-            exerciseImage.style.margin = "20px auto";
  
             let imageContainer = document.getElementById('exercise-image');
             imageContainer.innerHTML = "";
             imageContainer.appendChild(exerciseImage);
- 
-            document.getElementById('start-button').style.display = 'block';
-            document.getElementById('cancel-button').style.display = 'block';
+
+             if(!currentExerciseIndex == 0){
+                startTimer()
+             }
         }
 
         function startTimer() {
             if (!isRunning) {
                 isRunning = true;
-                let timeElapsed = 0;
+                let timeElapsed = exerciseTime;
                 let audio = new Audio("/static/mp3/countdown10.mp3");
                 timer = setInterval(() => {
-                    timeElapsed++;
                     document.getElementById('timer').innerText = formatTime(timeElapsed);
-                    if (timeElapsed == 34) {
+                    if (timeElapsed == 10) {
                         audio.play().then(() => console.log("Sound erlaubt!"))
                         .catch(error => console.error("Autoplay blockiert:", error));
                     }
-
-                    if (timeElapsed == 45) {
-                        audio.pause();
-                        audio.currentTime = 0;
-                    }
-
-                    if (timeElapsed == 50) {
-                        audio.play();
-                    }
-                    
-                    if (timeElapsed == 60) {
-                        audio.pause();
-                        audio.currentTime = 0;
+                    console.error(exercises.length);
+                    if (timeElapsed == 0) {
                         timeElapsed = 0;
-                        startNextExercise()
+                        isRunning = false;
+                        clearInterval(timer);
+                       
+                        audio.pause();
+                        audio.currentTime = 0;
+
+                        if(exercises.length == 1){
+                            alert("Alle Übungen abgeschlossen!");
+                            console.error(hi);
+                            window.location.href = "{{ url_for('index') }}"; // Zurück zur Startseite
+                        } else {
+                            console.error();
+                            startPauseTimer();
+                        }
+                        
                     }
-                }, 1000);
+                    console.error(timeElapsed);
+                    timeElapsed--;
+            }, 1000);
+
                 document.getElementById('start-button').style.display = 'none';
                 document.getElementById('stop-button').style.display = 'block';
             }
@@ -104,7 +112,43 @@
                 }
             }
         }
+        
+        function startPauseTimer() {
+            console.log("Start startPauseTimer()");
 
+            let pauseModalElement = document.getElementById('pauseModal');
+            
+            if (!pauseModalElement) {
+                console.error("Error: #pauseModal not found in HTML!");
+                return;
+            }
+
+            let pauseModal = new bootstrap.Modal(pauseModalElement, { keyboard: false });
+            pauseModal.show();
+
+            let pauseTimer = pauseTime;
+            let pauseTimerElement = document.getElementById('pause-timer');
+            let audio = new Audio("/static/mp3/countdown10.mp3");
+
+            let pauseInterval = setInterval(() => {
+                pauseTimer--;
+                pauseTimerElement.innerText = pauseTimer;
+                if (pauseTimer == 10) {
+                    audio.play().catch(error => console.error("Error: Autoplay ist blockiert", error));
+                }
+                if (pauseTimer <= 0) {
+                    clearInterval(pauseInterval);
+                    audio.pause();
+                    audio.currentTime = 0;
+                    pauseModal.hide(); 
+                    console.log("Pop-up closed. Next training...");
+                    startNextExercise();
+                    
+                }
+            }, 1000);
+        }
+
+    
         function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60);
             const secs = seconds % 60;
@@ -129,13 +173,15 @@
         function cancelExercise() {
             clearInterval(timer);
             isRunning = false;
-            window.location.href = "{{ url_for('level', level='einfach') }}"; // Zurück zur Übungsübersicht
+            window.location.href = "{{ url_for('level', level='mittel') }}"; // Zurück zur Übungsübersicht
         }
 
         function startNextExercise() {
             currentExerciseIndex++;
+            console.error(currentExerciseIndex+"currentExerciseIndex");
             if (currentExerciseIndex < exercises.length) {
                 currentSet = 1;
+                console.error(exercises.length+"exercises.length");
                 currentRepetition = 1;
                 document.getElementById('next-exercise-button').style.display = 'none'; // Verstecke den Button
                 startExercise(); // Starte die nächste Übung
@@ -146,53 +192,116 @@
         }
 
         window.onload = function() {
+            document.getElementById('timer').innerText = formatTime(exerciseTime);
             startExercise();
         };
     </script>
-    <style>
-        .circle {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            border: 2px solid #007bff;
-            border-radius: 50%;
-            margin: 5px;
-            background-color: transparent;
+     <style>
+        /* 📌 Общий стиль страницы */
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Roboto', sans-serif;
         }
-        .filled {
-            background-color: #007bff;
+
+        /* 📌 Карточка упражнения */
+        .exercise-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            margin: 20px auto;
         }
-        .container {
-            border: 2px solid #007bff;
+
+        /* 🖼️ Изображение упражнения */
+        .exercise-image img {
+            width: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ⏳ Таймер */
+        .timer-container {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #424242;
+            background: #e0e0e0;
             border-radius: 10px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 15px;
         }
+
+        /* 🔘 Кнопки */
         .btn {
-            width: 150px; /* Einheitliche Breite für alle Buttons */
+            border-radius: 25px;
+            font-size: 1.2rem;
+            padding: 12px 20px;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .exercise_description{
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 4px;
+        }
+
+        /* 📱 Адаптивность */
+        @media (max-width: 768px) {
+            .exercise-container {
+                padding: 15px;
+            }
+            .timer-container {
+                font-size: 2.5rem;
+            }
+            .btn {
+                font-size: 1rem;
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center">Übung starten</h1>
-        <h2 id="exercise-title" class="text-center"></h2>
-        <div id="exercise-image"></div>
-        <div id="exercise-description" class="text-center"></div>
- 
+    <div class="exercise-container">
+        <h1 id="exercise-title" class="text-center"></h1>
+        <div  class="exercise_description" id="exercise-description" class="text-center"></div>
+        <div class="exercise-image" id="exercise-image"></div>
+        <div class="timer-container" id="timer">0:{{exerciseTime}}</div>
+
+        <div class="d-grid gap-3 mt-4">
+            <button id="start-button" class="btn btn-success" onclick="startTimer()">Start</button>
+            <button id="stop-button" class="btn btn-warning" style="display: none;" onclick="stopTimer()">Stop</button>
+            <button id="cancel-button" class="btn btn-danger" onclick="cancelExercise()">Abbrechen</button>
+            <button id="next-exercise-button" class="btn btn-primary" style="display: none;" onclick="startNextExercise()">Nächste Übung starten</button>
         </div>
-        <div class="text-center">
-            <div id="timer" class="display-4">0:00</div>
-            <button id="start-button" class="btn btn-success mt-4" onclick="startTimer()">Start</button>
-            <button id="stop-button" class="btn btn-warning mt-4" style="display: none;" onclick="stopTimer()">Stop</button>
-            <button id="cancel-button" class="btn btn-danger mt-4" onclick="cancelExercise()">Abbrechen</button>
-            <button id="next-exercise-button" class="btn btn-primary mt-4" style="display: none;" onclick="startNextExercise()">Nächste Übung starten</button>
-        </div>
-        <!--<div class="text-center mt-4">
-            <h3>Wiederholungen</h3>
-            <div id="repetition-circles" class="text-center"></div>
-        </div>-->
     </div>
+
+    <div class="modal fade" id="pauseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Kurze Pause</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <h2 id="pause-timer">0:{{pauseTime}}</h2>
+                    <p>Bereite dich auf die nächste Übung vor...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
