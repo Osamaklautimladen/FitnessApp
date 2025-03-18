@@ -90,6 +90,14 @@ def level(level):
 def start_training():
     selected_exercises_ids = request.form.getlist('selected_exercises')
     
+    # Get exercise time and pause time from form
+    exercise_time = int(request.form.get('exercise_time', 45))
+    pause_time = int(request.form.get('pause_time', 15))
+    
+    # Validate input values
+    exercise_time = max(5, min(300, exercise_time))  # Between 5 and 300 seconds
+    pause_time = max(5, min(120, pause_time))  # Between 5 and 120 seconds
+    
     # Create a dictionary to store the order of each exercise
     exercise_orders = {}
     for exercise_id in selected_exercises_ids:
@@ -109,17 +117,28 @@ def start_training():
                 selected_exercises.append(exercise)
                 break
     
+    # Store all data in session
     session['selected_exercises'] = selected_exercises
-    print("✅ Saved to session:", session.get('selected_exercises'))
+    session['exercise_time'] = exercise_time
+    session['pause_time'] = pause_time
+    
+    print(f"✅ Saved to session: {len(selected_exercises)} exercises, exercise time: {exercise_time}s, pause time: {pause_time}s")
     
     return redirect(url_for('countdown'))
 
 @app.route('/countdown', methods=['GET'])
 def countdown():
-    selected_exercises = session.get('selected_exercises', []) 
+    selected_exercises = session.get('selected_exercises', [])
+    exercise_time = session.get('exercise_time', 45)
+    pause_time = session.get('pause_time', 15)
+    
     if not selected_exercises:
         return redirect(url_for('index'))
-    return render_template('countdown.html', exercises=selected_exercises)
+        
+    return render_template('countdown.html', 
+                           exercises=selected_exercises,
+                           exercise_time=exercise_time,
+                           pause_time=pause_time)
 
 @app.after_request
 def after_request(response):
