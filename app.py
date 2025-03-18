@@ -100,13 +100,21 @@ def start_training():
     """
 
     selected_exercises_ids = request.form.getlist('selected_exercises')
+    exercise_orders = request.form.getlist('exercise_order')
+
+    # Создаём пары (id, order) и сортируем по порядку выбора
+    ordered_exercises = sorted(zip(selected_exercises_ids, exercise_orders), key=lambda x: int(x[1]))
+
     exercises_data = load_exercises()
     selected_exercises = []
-    for exercise_id in selected_exercises_ids:
+
+    # Добавляем упражнения в список в порядке выбора
+    for exercise_id, _ in ordered_exercises:
         for exercise in exercises_data:
             if str(exercise['id']) == exercise_id:
                 selected_exercises.append(exercise)
-                break  
+                break
+
     session['selected_exercises'] = selected_exercises
 
     return redirect(url_for('countdown'))
