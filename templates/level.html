@@ -99,29 +99,29 @@
     <div class="container mt-5">
         <h1 class="text-center mb-4">Übungen für {{ level }}</h1>
 
-        <form action="{{ url_for('start_training') }}" method="POST">
-            <div class="row">
-                {% for exercise in exercises %}
-                <div class="col-md-4 col-sm-6 col-12 mb-4">
-                    <div class="card exercise-card">
-                        <img src="{{ url_for('static', filename='images/' + exercise.image) }}" alt="{{ exercise.title }}" class="exercise-img">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">{{ exercise.title }}</h5>
-                            <p class="card-text text-center">{{ exercise.description }}</p>
-                            <div class="toggle-container">
-                                <span id="order_{{ exercise.id }}" class="exercise-order"></span>
-                                <input type="hidden" id="hidden_order_{{ exercise.id }}" name="exercise_order" value="">
-                                <input type="checkbox" class="form-check-input exercise-checkbox" value="{{ exercise.id }}">
-                                <label for="toggle_{{ exercise.id }}">Ein/Aus</label>
-                            </div>
+     <form action="{{ url_for('start_training') }}" method="POST">
+        <div class="row">
+            {% for exercise in exercises %}
+            <div class="col-md-4 col-sm-6 col-12 mb-4">
+                <div class="card exercise-card">
+                    <img src="{{ url_for('static', filename='images/' + exercise.image) }}" alt="{{ exercise.title }}" class="exercise-img">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">{{ exercise.title }}</h5>
+                        <p class="card-text text-center">{{ exercise.description }}</p>
+                        <div class="toggle-container">
+                            <span id="order_{{ exercise.id }}" class="exercise-order"></span>
+                            <input type="hidden" id="hidden_order_{{ exercise.id }}" name="exercise_order_{{ exercise.id }}" value="">
+                            <input type="checkbox" class="form-check-input exercise-checkbox" name="selected_exercises" value="{{ exercise.id }}">
+                            <label for="toggle_{{ exercise.id }}">Ein/Aus</label>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
-
-            <button type="submit" class="btn btn-success btn-lg w-100 mt-4 animated-button">Trainingsplan aktivieren</button>
-        </form>
+            {% endfor %}
+        </div>
+    
+        <button type="submit" class="btn btn-success btn-lg w-100 mt-4 animated-button">Trainingsplan aktivieren</button>
+    </form>
 
         <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3 d-block text-center">Zurück zur Startseite</a>
     </div>
