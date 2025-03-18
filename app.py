@@ -88,17 +88,6 @@ def level(level):
 
 @app.route('/start_training', methods=['POST'])
 def start_training():
-    """
-    Starts a training session by preserving the order of selected exercises.
-
-    This route handles a POST request, retrieves a list of selected exercise IDs from the
-    form data in the order they were selected, loads the available exercises, and filters
-    the selected exercises accordingly.
-
-    :returns:
-        Rendered HTML template (countdown.html) with the selected exercises.
-    """
-
     selected_exercises_ids = request.form.getlist('selected_exercises')
     exercise_orders = request.form.getlist('exercise_order')
 
@@ -108,7 +97,6 @@ def start_training():
     exercises_data = load_exercises()
     selected_exercises = []
 
-    # Добавляем упражнения в список в порядке выбора
     for exercise_id, _ in ordered_exercises:
         for exercise in exercises_data:
             if str(exercise['id']) == exercise_id:
@@ -116,6 +104,7 @@ def start_training():
                 break
 
     session['selected_exercises'] = selected_exercises
+    print("✅ Сохранено в session:", session.get('selected_exercises'))  # Логируем сохранённые данные
 
     return redirect(url_for('countdown'))
 
