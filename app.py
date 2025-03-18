@@ -98,15 +98,16 @@ def start_training():
         Rendered HTML template (countdown.html) with the selected exercises.
     """
 
-    # Получаем список выбранных ID в порядке выбора
     selected_exercises_ids = request.form.getlist('selected_exercises')
 
-    # Загружаем все упражнения
     exercises_data = load_exercises()
-
-    # Фильтруем упражнения в порядке выбора
-    selected_exercises = [exercise for exercise_id in selected_exercises_ids
-                          for exercise in exercises_data if str(exercise["id"]) == exercise_id]
+    
+    selected_exercises = []
+    for exercise_id in selected_exercises_ids:
+        for exercise in exercises_data:
+            if str(exercise['id']) == exercise_id: 
+                selected_exercises.append(exercise)
+                break  
 
     return render_template('countdown.html', exercises=selected_exercises)
 
