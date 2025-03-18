@@ -88,38 +88,25 @@ def level(level):
 @app.route('/start_training', methods=['POST'])
 def start_training():
     """
-    Starts a training session by filtering selected exercises based on their IDs.
+    Starts a training session by preserving the order of selected exercises.
 
     This route handles a POST request, retrieves a list of selected exercise IDs from the
-    form data, loads the available exercises, and filters the selected exercises. If the
-    exercise IDs are valid, they are added to a list and passed to the countdown template
-    for rendering the training session.
-
-    :example:
-        If the form sends exercise IDs like ['1', '2', '3'], the method will filter
-        out exercises with these IDs from the available exercises data and render
-        the countdown page with those exercises.
+    form data in the order they were selected, loads the available exercises, and filters
+    the selected exercises accordingly.
 
     :returns:
-        Rendered HTML template (countdown.html) with the filtered exercises for the session.
-    :raises:
-        ValueError: If an exercise ID cannot be converted to an integer, it is skipped.
+        Rendered HTML template (countdown.html) with the selected exercises.
     """
 
-    selected_exercises_ids: dict = request.form.getlist('selected_exercises')
-    exercises_data: dict = load_exercises()
+    # Получаем список выбранных ID в порядке выбора
+    selected_exercises_ids = request.form.getlist('selected_exercises')
 
-    selected_exercises = []
-    exercise = {}
-    for exercise_id in selected_exercises_ids:
-        try:
-            exercise_id = int(exercise_id)
-        except ValueError:
-            print(f"{exercise_id} do not represent a well formatted Id.")
-            continue
-        for exercise in exercises_data:
-            if exercise['id'] == exercise_id:
-                selected_exercises.append(exercise)
+    # Загружаем все упражнения
+    exercises_data = load_exercises()
+
+    # Фильтруем упражнения в порядке выбора
+    selected_exercises = [exercise for exercise_id in selected_exercises_ids
+                          for exercise in exercises_data if str(exercise["id"]) == exercise_id]
 
     return render_template('countdown.html', exercises=selected_exercises)
 
