@@ -38,20 +38,24 @@
             const exercise = exercises[currentExerciseIndex];
             document.getElementById('exercise-title').innerText = exercise.title;
             document.getElementById('exercise-description').innerText = exercise.description;
- 
+            
+            // Обновляем номер текущего упражнения
+            document.getElementById('exercise-progress').innerText = `Übung ${currentExerciseIndex + 1} von ${exercises.length}`;
+        
             let exerciseImage = document.createElement('img');
             exerciseImage.src = `/static/images/${exercise.image}`;
             exerciseImage.alt = exercise.title;
             exerciseImage.style.display = "block";
- 
+        
             let imageContainer = document.getElementById('exercise-image');
             imageContainer.innerHTML = "";
             imageContainer.appendChild(exerciseImage);
-
-             if(!currentExerciseIndex == 0){
-                startTimer()
-             }
+        
+            if (!currentExerciseIndex == 0) {
+                startTimer();
+            }
         }
+
 
         function startTimer() {
             if (!isRunning) {
