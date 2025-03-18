@@ -109,13 +109,9 @@
                             <h5 class="card-title text-center">{{ exercise.title }}</h5>
                             <p class="card-text text-center">{{ exercise.description }}</p>
                             <div class="toggle-container">
-                                <!-- Номер выбранного упражнения -->
-                                <span class="exercise-order me-2" id="order_{{ exercise.id }}"> </span>
-                                
-                                <!-- Чекбокс -->
-                                <input type="checkbox" class="form-check-input exercise-checkbox"
-                                       id="toggle_{{ exercise.id }}" name="selected_exercises"
-                                       value="{{ exercise.id }}" data-id="{{ exercise.id }}">
+                                <span id="order_{{ exercise.id }}" class="exercise-order"></span>
+                                <input type="hidden" id="hidden_order_{{ exercise.id }}" name="exercise_order" value="">
+                                <input type="checkbox" class="form-check-input exercise-checkbox" value="{{ exercise.id }}">
                                 <label for="toggle_{{ exercise.id }}">Ein/Aus</label>
                             </div>
                         </div>
@@ -132,35 +128,44 @@
 
     <script>
         let selectedExercises = [];
-
+    
         document.querySelectorAll('.exercise-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function () {
-                let exerciseId = this.getAttribute('data-id');
+                let exerciseId = this.value;  // Используем value вместо data-id
                 let orderElement = document.getElementById(`order_${exerciseId}`);
-
+    
                 if (this.checked) {
-                    // Добавляем ID упражнения в массив
-                    selectedExercises.push(exerciseId);
+                    // Добавляем ID в массив, если его там нет
+                    if (!selectedExercises.includes(exerciseId)) {
+                        selectedExercises.push(exerciseId);
+                    }
                 } else {
                     // Удаляем из массива, если убрали галочку
                     selectedExercises = selectedExercises.filter(id => id !== exerciseId);
                 }
-
+    
                 // Обновляем номера очередности
                 updateExerciseOrder();
             });
         });
-
+    
         function updateExerciseOrder() {
             selectedExercises.forEach((id, index) => {
-                document.getElementById(`order_${id}`).textContent = `${index + 1}.`;
+                let orderElement = document.getElementById(`order_${id}`);
+                if (orderElement) {
+                    orderElement.textContent = `${index + 1}.`;
+                    document.getElementById(`hidden_order_${id}`).value = index + 1; // Обновляем скрытое поле
+                }
             });
-
-            // Если чекбокс сняли, очищаем номер
+    
+            // Очищаем номера у невыбранных чекбоксов
             document.querySelectorAll('.exercise-checkbox').forEach(checkbox => {
                 if (!checkbox.checked) {
-                    let orderElement = document.getElementById(`order_${checkbox.getAttribute('data-id')}`);
-                    orderElement.textContent = '';
+                    let orderElement = document.getElementById(`order_${checkbox.value}`);
+                    if (orderElement) {
+                        orderElement.textContent = '';
+                        document.getElementById(`hidden_order_${checkbox.value}`).value = ''; // Очищаем скрытое поле
+                    }
                 }
             });
         }
