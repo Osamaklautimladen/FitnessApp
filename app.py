@@ -89,23 +89,29 @@ def level(level):
 @app.route('/start_training', methods=['POST'])
 def start_training():
     selected_exercises_ids = request.form.getlist('selected_exercises')
-    exercise_orders = request.form.getlist('exercise_order')
-
-    # Создаём пары (id, order) и сортируем по порядку выбора
-    ordered_exercises = sorted(zip(selected_exercises_ids, exercise_orders), key=lambda x: int(x[1]))
-
+    
+    # Create a dictionary to store the order of each exercise
+    exercise_orders = {}
+    for exercise_id in selected_exercises_ids:
+        order_key = f"exercise_order_{exercise_id}"
+        if order_key in request.form and request.form[order_key]:
+            exercise_orders[exercise_id] = int(request.form[order_key])
+    
+    # Sort the selected exercises by their order
+    sorted_exercise_ids = sorted(selected_exercises_ids, key=lambda x: exercise_orders.get(x, 999))
+    
     exercises_data = load_exercises()
     selected_exercises = []
-
-    for exercise_id, _ in ordered_exercises:
+    
+    for exercise_id in sorted_exercise_ids:
         for exercise in exercises_data:
             if str(exercise['id']) == exercise_id:
                 selected_exercises.append(exercise)
                 break
-
+    
     session['selected_exercises'] = selected_exercises
-    print("✅ Сохранено в session:", session.get('selected_exercises'))  # Логируем сохранённые данные
-
+    print("✅ Saved to session:", session.get('selected_exercises'))
+    
     return redirect(url_for('countdown'))
 
 @app.route('/countdown', methods=['GET'])
