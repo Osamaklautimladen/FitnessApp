@@ -37,32 +37,49 @@
         }
 
         .image-container {
-            height: 320px; /* Фиксированная высота контейнера */
-            background-color: #f5f5f5; /* Светлый фон для контраста */
+            background-color: #f5f5f5;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             position: relative;
-            border-bottom: 3px solid #dee2e6;
+            width: 100%;
+        }
+
+        /* Default container for all images initially */
+        .image-container {
+            height: auto;
+          
+        }
+
+        /* When we detect vertical images, apply fixed height */
+        .image-container.vertical-container {
+            height: 320px;
+            width: 100%;
+            
+        }
+
+        /* When we detect horizontal images, let height adjust to content */
+        .image-container.horizontal-container {
+            height: auto;
         }
 
         .exercise-img {
-            max-height: 90%; /* Максимальная высота внутри контейнера */
-            max-width: 90%; /* Максимальная ширина внутри контейнера */
-            object-fit: contain; /* Изображение полностью видно */
-            margin: auto;
+            max-width: 100%;
+            
         }
 
         /* Для изображений, где вертикальные */
         .exercise-img.vertical {
-            max-height: 90%;
+            height: auto;
+            max-width: 100%;
             width: auto;
+            /* object-fit: fill; */
         }
 
         /* Для изображений, где горизонтальные */
         .exercise-img.horizontal {
-            max-width: 90%;
+            max-width: 100%;
             height: auto;
         }
 
@@ -77,7 +94,7 @@
         .toggle-container {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             margin-top: 10px;
         }
         .exercise-checkbox {
@@ -88,8 +105,8 @@
             width: 0;
         }
          .custom-checkbox {
-            width: 28px;
-            height: 28px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: 2px solid #ccc;
             display: flex;
@@ -137,7 +154,7 @@
       .selection-counter {
             position: fixed;
             right: 30px;
-            top: 40%; /* Позиционирование на 10% ниже */
+            top: 20%; /* Позиционирование на 10% ниже */
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -158,6 +175,11 @@
         .selection-counter.visible {
             opacity: 1;
             transform: scale(1);
+        }
+
+        .ein_aus {
+            color: #9b9b9b;
+            margin-left: 10px;
         }
         /* 📱 Адаптивность для телефонов */
         @media (max-width: 768px) {
@@ -203,6 +225,7 @@
                             <input type="hidden" id="hidden_order_{{ exercise.id }}" name="exercise_order_{{ exercise.id }}" value="">
                             <input type="checkbox" class="exercise-checkbox" id="checkbox_{{ exercise.id }}" name="selected_exercises" value="{{ exercise.id }}">
                             <label for="checkbox_{{ exercise.id }}" class="custom-checkbox" id="custom_checkbox_{{ exercise.id }}"></label>
+                            <span class="ein_aus">Ein/Aus</span>
                         </div>
                     </div>
                 </div>
@@ -396,11 +419,15 @@
         window.addEventListener('load', function() {
             document.querySelectorAll('.exercise-img').forEach(img => {
                 img.onload = function() {
+                    const container = this.closest('.image-container');
+                    
                     // Определяем соотношение сторон
                     if (this.naturalHeight > this.naturalWidth) {
                         this.classList.add('vertical');
+                        container.classList.add('vertical-container');
                     } else {
                         this.classList.add('horizontal');
+                        container.classList.add('horizontal-container');
                     }
                 };
                 
