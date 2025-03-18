@@ -242,7 +242,7 @@
     </div>
   <div id="selection-counter" class="selection-counter">0</div>
     <script>
-      let selectedExercises = [];
+        let selectedExercises = [];
         const counterElement = document.getElementById('selection-counter');
         
         // Функция обновления счетчика
@@ -256,7 +256,81 @@
                 counterElement.classList.remove('visible');
             }
         }
-    
+        // Add click event listener to the counter
+        document.getElementById('selection-counter').addEventListener('click', function() {
+            // Scroll to the submit button
+            document.querySelector('.btn-success').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        });
+
+        // Update the selection counter styles to add the arrow
+        const counterStyles = `
+        .selection-counter {
+            position: fixed;
+            right: 30px;
+            top: 40%;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            opacity: 0;
+            transform: scale(0.8);
+            cursor: pointer;
+        }
+        
+        .selection-counter.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .selection-counter::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%) scaleY(0);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 12px solid #28a745;
+            transition: transform 0.3s ease;
+        }
+        
+        .selection-counter.visible::after {
+            transform: translateX(-50%) scaleY(1);
+        }
+        
+        @media (max-width: 768px) {
+            .selection-counter {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+                right: 15px;
+            }
+            .selection-counter::after {
+                bottom: -12px;
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-top: 10px solid #28a745;
+            }
+        }`;
+
+        const styleElement = document.createElement('style');
+        styleElement.textContent = counterStyles;
+        document.head.appendChild(styleElement);
+        
         document.querySelectorAll('.exercise-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function () {
                 let exerciseId = this.value;
