@@ -36,11 +36,34 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
 
-        .exercise-img {
-            height: 280px;
-            object-fit: cover;
-            width: 100%;
+        .image-container {
+            height: 320px; /* Фиксированная высота контейнера */
+            background-color: #f5f5f5; /* Светлый фон для контраста */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
             border-bottom: 3px solid #dee2e6;
+        }
+
+        .exercise-img {
+            max-height: 90%; /* Максимальная высота внутри контейнера */
+            max-width: 90%; /* Максимальная ширина внутри контейнера */
+            object-fit: contain; /* Изображение полностью видно */
+            margin: auto;
+        }
+
+        /* Для изображений, где вертикальные */
+        .exercise-img.vertical {
+            max-height: 90%;
+            width: auto;
+        }
+
+        /* Для изображений, где горизонтальные */
+        .exercise-img.horizontal {
+            max-width: 90%;
+            height: auto;
         }
 
         /* 📌 Контент карточки */
@@ -137,7 +160,9 @@
             {% for exercise in exercises %}
             <div class="col-md-4 col-sm-6 col-12 mb-4">
                 <div class="card exercise-card">
-                    <img src="{{ url_for('static', filename='images/' + exercise.image) }}" alt="{{ exercise.title }}" class="exercise-img">
+                    <div class="image-container">
+                        <img src="{{ url_for('static', filename='images/' + exercise.image) }}" alt="{{ exercise.title }}" class="exercise-img">
+                    </div>
                     <div class="card-body">
                         <h5 class="card-title text-center">{{ exercise.title }}</h5>
                         <p class="card-text text-center">{{ exercise.description }}</p>
@@ -188,6 +213,24 @@
         let selectedExercises = [];
 
         const counterElement = document.getElementById('selection-counter');
+        
+        window.addEventListener('load', function() {
+            document.querySelectorAll('.exercise-img').forEach(img => {
+                img.onload = function() {
+                    // Определяем соотношение сторон
+                    if (this.naturalHeight > this.naturalWidth) {
+                        this.classList.add('vertical');
+                    } else {
+                        this.classList.add('horizontal');
+                    }
+                };
+                
+                // Для уже загруженных изображений
+                if (img.complete) {
+                    img.onload();
+                }
+            });
+        });
         
         // Функция обновления счетчика
         function updateCounter() {
