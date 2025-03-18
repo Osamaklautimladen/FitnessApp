@@ -13,27 +13,44 @@
     </script>
    
     <script>
-        const exerciseTime = 45;
+          // Exercise configuration from backend
+        const exerciseTime = {{ exercise_time }};
+        const pauseTime = {{ pause_time }};
+        
         let currentExerciseIndex = 0;
         let currentSet = 1;
         let currentRepetition = 1;
-        const pauseTime = 15;
         let isRunning = false;
-        const exercises = JSON.parse(document.getElementById('exercises-data').textContent);
+        let timer;
 
-        function startPreparationCountdown() {
-            const countdownElement = document.getElementById('countdown');
-            const interval = setInterval(() => {
-                countdownElement.innerText = preparationTime;
-                preparationTime--;
-
-                if (preparationTime < 0) {
-                    clearInterval(interval);
-                    startExercise();
+             // Parse exercises data
+        let exercises = [];
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const exercisesData = document.getElementById('exercises-data');
+                exercises = JSON.parse(exercisesData.textContent);
+                console.log("Loaded exercises:", exercises);
+                console.log(`Exercise time: ${exerciseTime}s, Pause time: ${pauseTime}s`);
+                
+                if (!exercises || exercises.length === 0) {
+                    alert("Keine Übungen ausgewählt!");
+                    window.location.href = "{{ url_for('index') }}";
+                    return;
                 }
-            }, 1000);
-        }
-
+                
+                // Initialize the first exercise
+                startExercise();
+                
+                // Display initial timer
+                document.getElementById('timer').innerText = formatTime(exerciseTime);
+                
+            } catch (error) {
+                console.error("Error loading exercise data:", error);
+                alert("Fehler beim Laden der Übungen!");
+                window.location.href = "{{ url_for('index') }}";
+            }
+        });
+        
         function startExercise() {
             const exercise = exercises[currentExerciseIndex];
             document.getElementById('exercise-title').innerText = exercise.title;
@@ -68,11 +85,11 @@
                         audio.play().then(() => console.log("Sound erlaubt!"))
                         .catch(error => console.error("Autoplay blockiert:", error));
                     }
-                    console.error(exercises.length);
+                    
                     if (timeElapsed == 0) {
+                        clearInterval(timer);
                         timeElapsed = 0;
                         isRunning = false;
-                        clearInterval(timer);
                        
                         audio.pause();
                         audio.currentTime = 0;
@@ -300,7 +317,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <h2 id="pause-timer">0:{{pauseTime}}</h2>
+                    <h2 id="pause-timer">{{pauseTime}}</h2>
                     <p>Bereite dich auf die nächste Übung vor...</p>
                 </div>
             </div>
