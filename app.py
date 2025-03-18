@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import json
 
 app = Flask(__name__)
+app.secret_key = 'super_secret_key'
 
 # Funktion zum Laden der Übungen aus der JSON-Datei
 def load_exercises():
