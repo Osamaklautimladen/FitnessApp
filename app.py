@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import json
 
 app = Flask(__name__)
@@ -99,25 +99,23 @@ def start_training():
     """
 
     selected_exercises_ids = request.form.getlist('selected_exercises')
-
     exercises_data = load_exercises()
-    
     selected_exercises = []
     for exercise_id in selected_exercises_ids:
         for exercise in exercises_data:
-            if str(exercise['id']) == exercise_id: 
+            if str(exercise['id']) == exercise_id:
                 selected_exercises.append(exercise)
                 break  
+    session['selected_exercises'] = selected_exercises
 
-    return render_template('countdown.html', exercises=selected_exercises)
+    return redirect(url_for('countdown'))
 
 @app.route('/countdown', methods=['GET'])
 def countdown():
-    exercises = load_exercises()  # Laden Sie die Übungen aus der JSON-Datei
-    # Hier können Sie die Übungen nach Level filtern, wenn nötig
-    for exercise in exercises:
-        exercise['image_url'] = url_for('static', filename='images/' + exercise['image'])  # Bild-URL hinzufügen
-    return render_template('countdown.html', exercises=exercises)
+    selected_exercises = session.get('selected_exercises', []) 
+    if not selected_exercises:
+        return redirect(url_for('index'))
+    return render_template('countdown.html', exercises=selected_exercises)
 
 @app.after_request
 def after_request(response):
